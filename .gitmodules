@@ -1,8 +1,10 @@
 [submodule "vida.js"]
 	path = vida.js
-	url = git@github.com:marenzio/vida.js
+	url = github.com/marenzio/vida.js
+#	url = git@github.com:marenzio/vida.js
 #	url = git@github.com:DDMAL/vida.js
 [submodule "meix.js"]
 	path = meix.js
-	url = git@github.com:marenzio/meix.js
+	url = github.com/marenzio/meix.js
+#	url = git@github.com:marenzio/meix.js
 #	url = git@github.com:DDMAL/meix.js
