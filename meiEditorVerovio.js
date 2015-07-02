@@ -83,6 +83,11 @@ require(['meiEditor'], function(){
                     recallID = id;
                 });
 
+                mei.Events.subscribe("CriticalNoteMusic", function(id)
+                {
+                    meiEditor.addCriticalMusicNote(id);
+                });
+
                 meiEditor.edit = function(editorAction)
                 {
                     meiEditorSettings.verovioInstance.edit(editorAction);
