@@ -86,6 +86,11 @@ require(['meiEditor'], function(){
                 mei.Events.subscribe("CriticalNoteMusic", function(id)
                 {
                     meiEditor.addCriticalMusicNote(id);
+
+                    var pageTitle = meiEditor.getActivePageTitle();
+                    var editorRef = meiEditor.getPageData(pageTitle);
+                    rewriteAce(editorRef);
+
                 });
 
                 meiEditor.edit = function(editorAction)
