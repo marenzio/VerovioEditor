@@ -84,13 +84,21 @@ require(['meiEditor'], function(){
                 });
 
                 mei.Events.subscribe("CriticalNoteMusic", function(id)
-                {
-                    meiEditor.addCriticalMusicNote(id);
+                {   console.log("one");
+                    meiEditor.addCriticalNoteMusic(id);
 
                     var pageTitle = meiEditor.getActivePageTitle();
                     var editorRef = meiEditor.getPageData(pageTitle);
                     rewriteAce(editorRef);
+                });
 
+                mei.Events.subscribe("CriticalNoteLyrics", function(id_cache)
+                {
+                    meiEditor.addCriticalNoteLyrics(id_cache);
+
+                    var pageTitle = meiEditor.getActivePageTitle();
+                    var editorRef = meiEditor.getPageData(pageTitle);
+                    rewriteAce(editorRef);
                 });
 
                 meiEditor.edit = function(editorAction)
