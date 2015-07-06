@@ -84,7 +84,7 @@ require(['meiEditor'], function(){
                 });
 
                 mei.Events.subscribe("CriticalNoteMusic", function(id)
-                {   console.log("one");
+                {
                     meiEditor.addCriticalNoteMusic(id);
 
                     var pageTitle = meiEditor.getActivePageTitle();
