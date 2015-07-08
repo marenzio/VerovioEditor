@@ -45,16 +45,6 @@ require(['meiEditor'], function(){
                     newAnnot.appendChild(newText);
                     measure.appendChild(newAnnot);
 
-                    // counting tabs for correct indentation (this is temporary - there must be a better way)
-                    // maybe add a check to see that <mei> exists and break otherwise
-                    for (var parent = staff; 
-                        $(parent).parent().prop('tagName').toString() != "mei";
-                        parent = $(parent).parent())
-                    {
-                        $(staff).after('\t');
-                    }
-                    $(staff).after('\n\t');
-
                     var editorRef = meiEditor.getPageData(pageTitle);
                     rewriteAce(editorRef);
 
@@ -63,9 +53,9 @@ require(['meiEditor'], function(){
 
                 $("#critical-note-lyr").on('click', function()
                 {
-                    var id_cache = meiEditorSettings.verovioInstance.getHighlightedLyrics();
-                    
+                    var id_cache = meiEditorSettings.verovioInstance.getHighlightedLyrics();                    
                     var firstNote = false;
+                    var tabs;
                     var pageTitle = meiEditor.getActivePageTitle();
                     var rootNode = meiEditor.getPageData(pageTitle).parsed;
                     var meiNode = rootNode.querySelector("mei");
@@ -76,7 +66,8 @@ require(['meiEditor'], function(){
                         var annotMain = rootNode.createElement("annot");
                         annotMain.setAttribute("label", "app-text");
                         meiNode.appendChild(annotMain);
-                        $(annotMain).before("\t");
+                        addTabs(annotMain, meiNode, "before");
+                        $(annotMain).prepend("\n");                    
                         $(annotMain).after("\n");
                         firstNote = true;
                     }
@@ -87,6 +78,19 @@ require(['meiEditor'], function(){
 
                     var newAnnot = rootNode.createElement("annot");
                     newAnnot.setAttribute("label", "");
+                    if (firstNote)
+                    {
+                        annotMain.appendChild(newAnnot);
+                        $(newAnnot).after("\n");
+                        addTabs(annotMain, meiNode, "append");
+                    }
+                    else
+                    {
+                        var prevChildren = annotMain.childNodes;
+                        annotMain.insertBefore(newAnnot, prevChildren[prevChildren.length-1]);
+                        $(newAnnot).before("\n");
+                    }
+
                     var newList = rootNode.createElement("list");
                     var newLi = rootNode.createElement("li");
                     var newText = rootNode.createTextNode("lyric");
@@ -98,23 +102,57 @@ require(['meiEditor'], function(){
                     var childText = rootNode.createTextNode("voice info");
                     childAnnot.appendChild(childText);
                     newAnnot.appendChild(childAnnot);
-                    annotMain.appendChild(newAnnot); 
 
-                    // Looking into an alternative to this mess
-                    if (firstNote) $(newAnnot).before("\n\t");
-                    $(newAnnot).before("\t");
-                    $(newAnnot).prepend("\n\t\t\t");
-                    $(newList).prepend("\n\t\t\t\t");
-                    $(newLi).after("\n\t\t\t");
-                    $(newList).after("\n\t\t\t");
-                    $(newAnnot).append("\n\t\t");
-                    $(newAnnot).after("\n\t");
+                    addTabs(newAnnot, meiNode, "before");
+                    $(newAnnot).prepend("\n");
+                    addTabs(newList, meiNode, "before");
+                    $(newList).prepend("\n");
+                    addTabs(newLi, meiNode, "before");
+                    $(newList).append("\n");
+                    addTabs(newList, meiNode, "append");
+                    $(childAnnot).before("\n");
+                    addTabs(childAnnot, meiNode, "before");
+                    $(childAnnot).after("\n");
+                    addTabs(newAnnot, meiNode, "append");
 
                     var editorRef = meiEditor.getPageData(pageTitle);
                     rewriteAce(editorRef);
 
                     meiEditorSettings.verovioInstance.resetIDArrays();
                 });
+
+                function addTabs(node, topNode, loc)
+                {
+                    var count = 0;
+                    var curNode = node;
+                    while (curNode != topNode)
+                    {
+                        curNode = curNode.parentNode;
+                        count++;
+                    }
+                    switch (loc)
+                    {
+                        case "before":
+                            for (var i = 0; i < count; i++)
+                                $(node).before("\t");
+                            break;
+
+                        case "after":
+                            for (var i = 0; i < count; i++)
+                                $(node).after("\t");
+                            break;
+
+                        case "prepend":
+                            for (var i = 0; i < count; i++)
+                                $(node).prepend("\t");
+                            break;
+
+                        case "append":
+                            for (var i = 0; i < count; i++)
+                                $(node).append("\t");
+                            break;
+                    }
+                }
 
                 createModal(meiEditorSettings.element, 'updateVerovioModal', false, 
                     '<h4>Push a file to Verovio:</h4>' +
