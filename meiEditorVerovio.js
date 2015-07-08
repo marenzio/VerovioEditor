@@ -15,11 +15,105 @@ require(['meiEditor'], function(){
 
                 meiEditor.addToNavbar("Verovio", "verovio");
                 $("#dropdown-verovio").append("<li><a id='update-verovio'>Update Verovio</a></li>");
+                $("#dropdown-verovio").append("<li><a id='critical-note-mus'>Add Critical Note Music</a></li>");
+                $("#dropdown-verovio").append("<li><a id='critical-note-lyr'>Add Critical Note Lyrics</a></li>");
                     //"<li><a id='update-dropdown'>Automatically update:<span style='float:right'><input type='checkbox' id='updateBox' checked='checked'/></span></a></li>");
-                  
+                
                 $("#update-verovio").on('click', function()
                 {
                     $("#updateVerovioModal").modal();
+                });
+
+                $("#critical-note-mus").on('click', function()
+                {
+                    var ids = meiEditorSettings.verovioInstance.getHighlightedNote();
+                    if (ids.length == 1) 
+                        var id = ids[0];
+                    else return;
+
+                    var pageTitle = meiEditor.getActivePageTitle();
+                    var rootNode = meiEditor.getPageData(pageTitle).parsed;
+                    var note = rootNode.querySelector("note[*|id=" + id);
+                    var staff = note.closest("staff");
+                    var measure = note.closest("measure");
+
+                    var newAnnot = rootNode.createElement("annot");
+                    newAnnot.setAttribute("label", "app");
+                    newAnnot.setAttribute("source", "");
+                    newAnnot.setAttribute("plist", id);
+                    newText = rootNode.createTextNode("critical note");
+                    newAnnot.appendChild(newText);
+                    measure.appendChild(newAnnot);
+
+                    // counting tabs for correct indentation (this is temporary - there must be a better way)
+                    // maybe add a check to see that <mei> exists and break otherwise
+                    for (var parent = staff; 
+                        $(parent).parent().prop('tagName').toString() != "mei";
+                        parent = $(parent).parent())
+                    {
+                        $(staff).after('\t');
+                    }
+                    $(staff).after('\n\t');
+
+                    var editorRef = meiEditor.getPageData(pageTitle);
+                    rewriteAce(editorRef);
+
+                    meiEditorSettings.verovioInstance.resetIDArrays();
+                });
+
+                $("#critical-note-lyr").on('click', function()
+                {
+                    var id_cache = meiEditorSettings.verovioInstance.getHighlightedLyrics();
+                    
+                    var firstNote = false;
+                    var pageTitle = meiEditor.getActivePageTitle();
+                    var rootNode = meiEditor.getPageData(pageTitle).parsed;
+                    var meiNode = rootNode.querySelector("mei");
+
+                    // if there is not already a main <annot> element, add it            
+                    if (rootNode.querySelector('annot[label="app-text"]') == null)
+                    {
+                        var annotMain = rootNode.createElement("annot");
+                        annotMain.setAttribute("label", "app-text");
+                        meiNode.appendChild(annotMain);
+                        $(annotMain).before("\t");
+                        $(annotMain).after("\n");
+                        firstNote = true;
+                    }
+                    else
+                    {
+                        var annotMain = rootNode.querySelector('annot[label="app-text"]');
+                    }
+
+                    var newAnnot = rootNode.createElement("annot");
+                    newAnnot.setAttribute("label", "");
+                    var newList = rootNode.createElement("list");
+                    var newLi = rootNode.createElement("li");
+                    var newText = rootNode.createTextNode("lyric");
+                    newLi.appendChild(newText);
+                    newList.appendChild(newLi);
+                    newAnnot.appendChild(newList);
+                    var childAnnot = rootNode.createElement("annot");
+                    childAnnot.setAttribute("plist", id_cache);
+                    var childText = rootNode.createTextNode("voice info");
+                    childAnnot.appendChild(childText);
+                    newAnnot.appendChild(childAnnot);
+                    annotMain.appendChild(newAnnot); 
+
+                    // Looking into an alternative to this mess
+                    if (firstNote) $(newAnnot).before("\n\t");
+                    $(newAnnot).before("\t");
+                    $(newAnnot).prepend("\n\t\t\t");
+                    $(newList).prepend("\n\t\t\t\t");
+                    $(newLi).after("\n\t\t\t");
+                    $(newList).after("\n\t\t\t");
+                    $(newAnnot).append("\n\t\t");
+                    $(newAnnot).after("\n\t");
+
+                    var editorRef = meiEditor.getPageData(pageTitle);
+                    rewriteAce(editorRef);
+
+                    meiEditorSettings.verovioInstance.resetIDArrays();
                 });
 
                 createModal(meiEditorSettings.element, 'updateVerovioModal', false, 
@@ -81,24 +175,6 @@ require(['meiEditor'], function(){
                 {
                     meiEditor.gotoLineWithID(id);
                     recallID = id;
-                });
-
-                mei.Events.subscribe("CriticalNoteMusic", function(id)
-                {
-                    meiEditor.addCriticalNoteMusic(id);
-
-                    var pageTitle = meiEditor.getActivePageTitle();
-                    var editorRef = meiEditor.getPageData(pageTitle);
-                    rewriteAce(editorRef);
-                });
-
-                mei.Events.subscribe("CriticalNoteLyrics", function(id_cache)
-                {
-                    meiEditor.addCriticalNoteLyrics(id_cache);
-
-                    var pageTitle = meiEditor.getActivePageTitle();
-                    var editorRef = meiEditor.getPageData(pageTitle);
-                    rewriteAce(editorRef);
                 });
 
                 meiEditor.edit = function(editorAction)
