@@ -1,3 +1,4 @@
+
 #mei-editor{
 	width:50%;
 	display:inline-block;
@@ -15,4 +16,8 @@
 
 a{
 	z-index:50;
+}
+
+.navbar {
+  border-radius: 0 !important;
 }
