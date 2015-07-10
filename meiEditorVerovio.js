@@ -61,21 +61,23 @@ require(['meiEditor'], function(){
                 $("#critical-note-lyr").on('click', function()
                 {
                     var id_cache = meiEditorSettings.verovioInstance.getHighlightedLyrics();               
+                    if (id_cache.length == 0) return;
                     var id_list = getIDList(id_cache);  // create string with values separated by white space
                     var firstNote = false;
                     var tabs;
                     var pageTitle = meiEditor.getActivePageTitle();
                     var rootNode = meiEditor.getPageData(pageTitle).parsed;
                     var meiNode = rootNode.querySelector("mei");
-                    var scoreNode = rootNode.querySelector("score");
+                    var verseNode = rootNode.querySelector("verse[*|id=" + id_cache[0]);
+                    var sectionNode = verseNode.closest("section");
 
                     // if there is not already a main <annot> element, add it            
                     if (rootNode.querySelector('annot[label="app-text"]') == null)
                     {
                         var annotMain = rootNode.createElement("annot");
                         annotMain.setAttribute("label", "app-text");
-                        scoreNode.appendChild(annotMain);
-                        //addTabs(annotMain, meiNode, "before");
+                        sectionNode.appendChild(annotMain);
+
                         $(annotMain).before("\t");
                         $(annotMain).prepend("\n");                    
                         $(annotMain).after("\n");
@@ -93,7 +95,7 @@ require(['meiEditor'], function(){
                         annotMain.appendChild(newAnnot);
                         $(newAnnot).after("\n");
                         addTabs(annotMain, meiNode, "append");
-                        addTabs(scoreNode, meiNode, "append");
+                        addTabs(sectionNode, meiNode, "append");
                     }
                     else
                     {
@@ -227,13 +229,11 @@ require(['meiEditor'], function(){
                     };
                     
                     var formattedData = meiEditor.getPageData(pageName).getSession().doc.getAllLines().join("\n"); //0-indexed
-
                     meiEditorSettings.verovioInstance.changeMusic(formattedData);
                 };
 
                 $("#updateVerovioModal-primary").on('click', function()
                 {
-                    
                     var pageName = $("#selectVerovio").find(":selected").text();
                     updateVerovio(pageName);
                     $("#updateVerovioModal-close").trigger('click');
